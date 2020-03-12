@@ -1,0 +1,30 @@
+import csv
+import requests
+from bs4 import BeautifulSoup as soup, BeautifulSoup
+from urllib.request import urlopen as uReq
+
+my_url = "https://www.amazon.co.uk/s?k=laptops&i=computers&rh=n%3A429886031%2Cp_n_feature_fifteen_browse-bin" \
+         "%3A8322531031%2Cp_n_feature_thirteen_browse-bin%3A8322540031%2Cp_n_feature_three_browse-bin%3A213559031" \
+         "%2Cp_89%3ADell&dc&qid=1583793707&rnid=1632651031&ref=sr_nr_p_89_1 "
+headers = {"Accept-Language": "en-US, en;q=0.5"}
+results = requests.get(my_url, headers=headers)
+# Opening up connection, grabbing the page
+u_client = uReq(my_url)
+page_html = u_client.read()
+u_client.close()
+page_soup = soup(page_html, "html.parser")
+soup2 = BeautifulSoup(page_soup.prettify(), "html.parser")
+# List comprehension to collect name and description of the item
+products_name = [i.text.strip() for i in soup2.findAll("span", {"class": "a-size-base-plus a-color-base a-text-normal"},
+                                                       {"dir": "auto"})]
+# List comprehension to collect name and description of the item
+price = [x.text.replace('\n', "").replace(" ", "") for x in soup2.findAll("span", {"class": "a-price-whole"})]
+# Creating headers for csv file
+headers = "Brand, Price\n"
+# Creating csv file and writing collected data into the file
+filename = "products.csv"
+with open(filename, "w", newline='') as f:
+    f.write(headers)
+    writer = csv.writer(f)
+    writer.writerows(zip(products_name, price))
+f.close()
